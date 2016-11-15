@@ -1,0 +1,21 @@
+{
+  "name": "HighlighterExtension",
+  "authors": [
+    "Weige <waiwang1113@gmail.com>"
+  ],
+  "description": "loading all config files",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.1"
+  }
+}
