@@ -1,0 +1,49 @@
+<html>
+<head>
+	<script src="bower_components/jquery/dist/jquery.js"></script> 
+	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+	<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script> 
+	<link rel="stylesheet" type="text/css" href="css/pick-a-color-1.2.3.min.css">
+	<script src="js/pick-a-color-1.2.3.min.js"></script>
+	<script src="js/tinycolor-0.9.15.min.js"></script>
+	<script src="popup.js"></script>
+	<link rel="stylesheet" type="text/css" href="popup.css">
+</head>
+<body style="width:500px">
+	<div class="container">
+		<div class="panel panel-default">
+			<!-- Default panel contents -->
+			<div class="panel-heading">
+
+				<div class="row">
+					<div class="col-xs-6"><h4><small>Add word or sentense </small></h4></div>
+					<div class="col-xs-6">
+						<span class="pull-right">
+							<div class="input-group">
+								<span>Enable&nbsp;</span>
+								<input type="checkbox" name="enable_highlight" checked >
+							</div>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="input-group"> 
+				<input type="text" placeholder="Highlight Text" class="form-control" id="newKeyword"> 
+				<span class="input-group-btn">
+					<button class="btn btn-primary" type="button" id="addNewKeyword">Add</button>
+				</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<div class="input-group">
+					<span class="input-group-btn"><input type="text" class="pick-a-color" value="222"></span>
+					<input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1" readonly>
+	  				<span class="input-group-btn"><button class="btn btn-danger" type="button">Delete</button></span>
+				</div>
+			</div> 
+		</div>
+	</div>
+	<h1>Storage</h1>
+</body>
+</html>

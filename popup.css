@@ -1,0 +1,7 @@
+.pick-a-color-markup .input-group-btn .color-dropdown.no-hex{
+	height:34px;
+	border-bottom-right-radius: 0px;
+    border-top-right-radius: 0px;
+    margin-right: -1px;
+}
+ 

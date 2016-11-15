@@ -11,18 +11,22 @@
 	        this.indexOfPattern = indexOfPattern;
 	        //The pattern or remaining pattern we want to search
 	        //Note the origin pattern may be split into several nodes, and if we find partial pattern
-	        //in the current searching node, we need the remaining pattern to search in next node
+	        //in the current searching node, we need the remaining pattern to be searched in next node
 	        this.pattern = pattern;
 	        //number of chracters we already searched
 	        this.lengthOfElements = lengthOfElements;
       	}
    	}
-	//highlight characters in text node by creating new span element for the characters 
-	//Implementation detail - 
-	//  Split the text node into three siblings text node and wrap middle text node into a
-	//  span node
+   	/*
+		highlight characters in text node by creating new span element for the characters 
+		Implementation detail - 
+			Split the text node into three siblings text node and wrap middle text node into a
+		  	span node
+		@param element text node that need to be splitted and added new element to
+		@param startIndex start index of text that need to be highlighted
+		@param lengthOfText length of text
+	*/
 	function addTagToText(element,startIndex,lengthOfText){
-	    console.log(findBackgroundColor(element))
 	    //new Node to hold the highlighted text
 	    var newNode = document.createElement('span'); 
 	    newNode.className="highlight";
@@ -32,6 +36,7 @@
 	    newNode.appendChild(middleclone);
 	    middlebit.parentNode.replaceChild(newNode, middlebit);
   	}
+
   	function highlightText(indexOfPatternInTextNode,element,text,lengthOfPreviousElements){
 
 	    //Base case that current node is text node which means the text() returns all visible characters
@@ -52,6 +57,7 @@
 		          
 		        }else{
 		          	//Since all matching characters are in current text code
+		          	//We highlight all 
 		          	addTagToText(element,indexOfPatternInTextNode - lengthOfPreviousElements, text.length )
 		          	return new HighlightResponse(true);
 		        }
@@ -71,7 +77,12 @@
 	      	return result;
 	    }
   	}
-  	function highlight(text,element){
+  	/*
+  		function for highlighting text in given element
+  		@param text that need to be highlight
+  		@param element html element contains the content need to be highlighted
+  	*/
+  	function highlightInElement(text,element){
 	    var contentText = $(element).text();
 	    var regex = new RegExp(text,'g');
 	    var match;
@@ -80,7 +91,25 @@
 	      	highlightText(indexOfStartPattern,element,text,0)
 	    }
   	}
-  	$(":not(html,body):visible:contains('editor')").each(function(index,obj){
-    	highlighe('editor',obj)
-  	}); 	
+  	/*
+  		highlight all text occurrences in the document
+  		@param text the text need to be highlighted
+  	*/
+  	function highlight(text){
+		$(":not(html,body):visible:contains('"+text+"')").each(function(index,obj){
+	    	highlighe('editor',obj)
+	  	}); 
+  	}
+  	chrome.storage.onChanged.addListener(
+  		function(changes, namespace) {
+  			for (key in changes) {
+  				var storageChange = changes[key];
+  				if(storageChange.newValue){
+  					highlight(storageChange.newValue);
+  				}
+  			}
+
+  		}
+  	);
+  	 	
 })();
