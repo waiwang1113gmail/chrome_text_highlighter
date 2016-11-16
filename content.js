@@ -1,4 +1,5 @@
 (function(){
+	var highlightClassName = "ww_hightlight";
 	// class for represents the response that returned by highlight function
    	class HighlightResponse{
       	constructor(result,indexOfPattern, pattern, lengthOfElements){
@@ -29,7 +30,8 @@
 	function addTagToText(element,startIndex,lengthOfText){
 	    //new Node to hold the highlighted text
 	    var newNode = document.createElement('span'); 
-	    newNode.className="highlight";
+	    newNode.className=highlightClassName;
+	    newNode.style.background='red';
 	    var middlebit = element.splitText(startIndex);
 	    var endbit = middlebit.splitText(lengthOfText);
 	    var middleclone = middlebit.cloneNode(true);
@@ -83,7 +85,8 @@
   		@param element html element contains the content need to be highlighted
   	*/
   	function highlightInElement(text,element){
-	    var contentText = $(element).text();
+
+	    var contentText = $(element).text(); 
 	    var regex = new RegExp(text,'g');
 	    var match;
 	    while(match = regex.exec(contentText)){
@@ -95,11 +98,37 @@
   		highlight all text occurrences in the document
   		@param text the text need to be highlighted
   	*/
-  	function highlight(text){
-		$(":not(html,body):visible:contains('"+text+"')").each(function(index,obj){
-	    	highlighe('editor',obj)
-	  	}); 
+  	function highlight(text){ 
+		var elementArray = $(":not(html,body):visible:contains('"+text+"')").sort(function(a,b){
+			return $(a).parents().length > $(b).parents().length
+		}); 
+		while(elementArray.length!=0){
+			var element=elementArray[0];
+			highlightInElement(text,element);
+			elementArray=elementArray.filter(function(i,o){return element!==o && !element.contains(o)});
+		}
   	}
+  	//Observer for added elements after init
+  	var observer = new WebKitMutationObserver(function(mutations){
+  		mutations.forEach(function(mutation){
+  			if(mutation.type=== 'childList' && mutation.addedNodes.length >0){
+  				mutation.addedNodes.forEach(function(node){
+  					if(!(node.nodeType == 3 )&& !(node.nodeName==='SPAN' && node.className ===highlightClassName )){
+  						 chrome.storage.local.get(null,function(keys){
+					  		for(var key in keys){
+					  			highlightInElement(keys[key],node)
+					  		}
+					  	})
+  						 
+  					}
+  				})
+  			}
+  		}) 
+  	});
+  	$(document).ready(function(){
+  		observer.observe(document,{ childList: true, characterData: true ,subtree:true})
+  	})
+
   	chrome.storage.onChanged.addListener(
   		function(changes, namespace) {
   			for (key in changes) {
