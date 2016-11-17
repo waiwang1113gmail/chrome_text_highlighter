@@ -134,7 +134,8 @@
   			for (key in changes) {
   				var storageChange = changes[key];
   				if(storageChange.newValue){
-  					highlight(storageChange.newValue);
+  					console.log(storageChange.newValue.text)
+  					highlight(storageChange.newValue.text);
   				}
   			}
 
