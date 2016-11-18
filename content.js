@@ -1,5 +1,6 @@
 (function(){
 	var highlightClassName = "ww_hightlight";
+	var highlightTag = 'i';
 	// class for represents the response that returned by highlight function
    	class HighlightResponse{
       	constructor(result,indexOfPattern, pattern, lengthOfElements){
@@ -19,6 +20,27 @@
       	}
    	}
    	/*
+   		update highlighted keyword
+   		@param tag_id id of background element
+   		@param newColor
+   	*/
+   	function updateTagColor(keywordId,newColor){
+   		console.log(newColor);
+   		$(highlightTag+'[keywordId="'+keywordId+'"]').each(function(i,ele){
+   			ele.style.background = newColor;
+   		})
+   	}
+   	/*
+   		remove highlighted text for given tag id
+   		@param tag_id id of background element
+   	*/
+   	function removeTag(tag_id){
+   		$(highlightTag+'[keywordId="'+tag_id+'"]').each(function(i,ele){
+
+   			$(ele).replaceWith(document.createTextNode(ele.textContent));
+   		})
+   	}
+   	/*
 		highlight characters in text node by creating new span element for the characters 
 		Implementation detail - 
 			Split the text node into three siblings text node and wrap middle text node into a
@@ -26,12 +48,16 @@
 		@param element text node that need to be splitted and added new element to
 		@param startIndex start index of text that need to be highlighted
 		@param lengthOfText length of text
+		@param color to highlight text
+  		@param keywordid
 	*/
-	function addTagToText(element,startIndex,lengthOfText){
+	function addTagToText(element,startIndex,lengthOfText,color,keywordid){
 	    //new Node to hold the highlighted text
-	    var newNode = document.createElement('span'); 
+	    var newNode = document.createElement(highlightTag); 
 	    newNode.className=highlightClassName;
-	    newNode.style.background='red';
+	    newNode.setAttribute("keywordId", keywordid);
+	    console.log(color);
+	    newNode.style.background = color;
 	    var middlebit = element.splitText(startIndex);
 	    var endbit = middlebit.splitText(lengthOfText);
 	    var middleclone = middlebit.cloneNode(true);
@@ -39,7 +65,7 @@
 	    middlebit.parentNode.replaceChild(newNode, middlebit);
   	}
 
-  	function highlightText(indexOfPatternInTextNode,element,text,lengthOfPreviousElements){
+  	function highlightText(indexOfPatternInTextNode,element,text,lengthOfPreviousElements,color,keywordid){
 
 	    //Base case that current node is text node which means the text() returns all visible characters
 	    if(element.nodeType === 3){
@@ -53,14 +79,14 @@
 		        	//The number of matching character in current node
 		        	var numberOfMachingCharacter = lengthOfIncludingCurrentNode - indexOfPatternInTextNode;
 		        	//Create tag to surround the matched text
-		        	addTagToText(element,indexOfPatternInTextNode - lengthOfPreviousElements,numberOfMachingCharacter);
+		        	addTagToText(element,indexOfPatternInTextNode - lengthOfPreviousElements,numberOfMachingCharacter,color,keywordid);
 
 		        	return new HighlightResponse(false,lengthOfIncludingCurrentNode,text.substring(numberOfMachingCharacter),lengthOfIncludingCurrentNode);
 		          
 		        }else{
 		          	//Since all matching characters are in current text code
 		          	//We highlight all 
-		          	addTagToText(element,indexOfPatternInTextNode - lengthOfPreviousElements, text.length )
+		          	addTagToText(element,indexOfPatternInTextNode - lengthOfPreviousElements, text.length ,color,keywordid)
 		          	return new HighlightResponse(true);
 		        }
 	      	}else{ 
@@ -71,7 +97,7 @@
 	      	var listOfChildrenElements = $(element).contents().toArray();
 	      	var result= new HighlightResponse(false,indexOfPatternInTextNode,text,lengthOfPreviousElements); 
 	      	for(var indexOfElement in listOfChildrenElements){
-	        	result = highlightText(result.indexOfPattern, listOfChildrenElements[indexOfElement], result.pattern,result.lengthOfElements);
+	        	result = highlightText(result.indexOfPattern, listOfChildrenElements[indexOfElement], result.pattern,result.lengthOfElements,color,keywordid);
 	         	if(result.result){
 	          		return result;
 	        	}
@@ -83,28 +109,34 @@
   		function for highlighting text in given element
   		@param text that need to be highlight
   		@param element html element contains the content need to be highlighted
+  		@param color to highlight text
+  		@param keywordid
   	*/
-  	function highlightInElement(text,element){
+  	function highlightInElement(text,element,color,keywordid){
 
 	    var contentText = $(element).text(); 
-	    var regex = new RegExp(text,'g');
+	    var regex = new RegExp(text,'gi');
 	    var match;
+	    console.log(contentText)
 	    while(match = regex.exec(contentText)){
+	    	console.log(match);
 	      	var indexOfStartPattern = match["index"];
-	      	highlightText(indexOfStartPattern,element,text,0)
+	      	highlightText(indexOfStartPattern,element,text,0,color,keywordid)
 	    }
   	}
   	/*
   		highlight all text occurrences in the document
   		@param text the text need to be highlighted
+  		@param color to highlight text
+  		@param keywordid
   	*/
-  	function highlight(text){ 
+  	function highlight(text,color,keywordid){ 
 		var elementArray = $(":not(html,body):visible:contains('"+text+"')").sort(function(a,b){
 			return $(a).parents().length > $(b).parents().length
 		}); 
 		while(elementArray.length!=0){
 			var element=elementArray[0];
-			highlightInElement(text,element);
+			highlightInElement(text,element,color,keywordid);
 			elementArray=elementArray.filter(function(i,o){return element!==o && !element.contains(o)});
 		}
   	}
@@ -113,10 +145,12 @@
   		mutations.forEach(function(mutation){
   			if(mutation.type=== 'childList' && mutation.addedNodes.length >0){
   				mutation.addedNodes.forEach(function(node){
-  					if(!(node.nodeType == 3 )&& !(node.nodeName==='SPAN' && node.className ===highlightClassName )){
+  					if(!(node.nodeType == 3 )&& !(node.nodeName.toUpperCase()===highlightTag.toUpperCase() && node.className ===highlightClassName )){
+  					 
   						 chrome.storage.local.get(null,function(keys){
 					  		for(var key in keys){
-					  			highlightInElement(keys[key],node)
+					  			var keyword = keys[key];
+					  			highlightInElement(keyword.text,node,keyword.color,key);
 					  		}
 					  	})
   						 
@@ -126,6 +160,12 @@
   		}) 
   	});
   	$(document).ready(function(){
+  		chrome.storage.local.get(null,function(items){
+	  		for(var key in items){
+	  			var keyword = items[key];
+	  			highlight(keyword.text,keyword.color,key);
+	  		}
+	  	})
   		observer.observe(document,{ childList: true, characterData: true ,subtree:true})
   	})
 
@@ -133,9 +173,12 @@
   		function(changes, namespace) {
   			for (key in changes) {
   				var storageChange = changes[key];
-  				if(storageChange.newValue){
-  					console.log(storageChange.newValue.text)
-  					highlight(storageChange.newValue.text);
+  				if(!storageChange.oldValue && storageChange.newValue){ 
+  					highlight(storageChange.newValue.text,storageChange.newValue.color,key);
+  				}else if(!storageChange.newValue){
+  					removeTag(key);
+  				}else if(storageChange.oldValue.color !== storageChange.newValue.color){
+  					updateTagColor(key,storageChange.newValue.color);
   				}
   			}
 

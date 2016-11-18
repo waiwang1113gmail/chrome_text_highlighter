@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	//Baisc background color that assigned to the keywords
-	var colors = ["yellow","green","red","blue","purple","pink","orange"];
+	var colors = ["#ffd750","#64DAED","#FF9999","#6495ED","#FF5079","#64DAED","#2F2A7D"];
 	var colorIndex = 0;
 
 	//return a color and move colorIndex to next
@@ -27,6 +27,12 @@ $(document).ready(function(){
 			showHexInput            : false,
 			allowBlank				: true,
 			inlineDropdown			: true
+		}).change(function(){
+			var self = this;
+			chrome.storage.local.get(key,function(items){
+				items[key].color = "#" + self.value;
+				chrome.storage.local.set(items);
+			});
 		});
 		newKeyword.find(".keyword-filed").val(keyword);
 		newKeyword.show().appendTo($("#keywords"));
