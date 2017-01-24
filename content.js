@@ -1,6 +1,13 @@
 (function(){
 	var highlightClassName = "ww_hightlight";
 	var highlightTag = 'i';
+	var tagNotToProcess = ["SCRIPT","STYLE","IFRAME"];
+
+	//Custom JQuery expr to support case insensitive search
+	jQuery.expr[':'].contains = function(a, i, m) {
+	  return jQuery(a).text().toUpperCase()
+	      .indexOf(m[3].toUpperCase()) >= 0;
+	};
 	// class for represents the response that returned by highlight function
    	class HighlightResponse{
       	constructor(result,indexOfPattern, pattern, lengthOfElements){
@@ -56,7 +63,6 @@
 	    var newNode = document.createElement(highlightTag); 
 	    newNode.className=highlightClassName;
 	    newNode.setAttribute("keywordId", keywordid);
-	    console.log(color);
 	    newNode.style.background = color;
 	    var middlebit = element.splitText(startIndex);
 	    var endbit = middlebit.splitText(lengthOfText);
@@ -113,16 +119,17 @@
   		@param keywordid
   	*/
   	function highlightInElement(text,element,color,keywordid){
-
-	    var contentText = $(element).text(); 
-	    var regex = new RegExp(text,'gi');
-	    var match;
-	    console.log(contentText)
-	    while(match = regex.exec(contentText)){
-	    	console.log(match);
-	      	var indexOfStartPattern = match["index"];
-	      	highlightText(indexOfStartPattern,element,text,0,color,keywordid)
-	    }
+  		if(tagNotToProcess.indexOf(element.nodeName.toUpperCase())<0){
+  			var contentText = $(element).text(); 
+		    var regex = new RegExp(text,'gi');
+		    var match;
+		    while(match = regex.exec(contentText)){
+		    	console.log(match);
+		      	var indexOfStartPattern = match["index"];
+		      	highlightText(indexOfStartPattern,element,text,0,color,keywordid)
+		    }
+  		}
+	    
   	}
   	/*
   		highlight all text occurrences in the document
@@ -143,10 +150,10 @@
   	//Observer for added elements after init
   	var observer = new WebKitMutationObserver(function(mutations){
   		mutations.forEach(function(mutation){
+
   			if(mutation.type=== 'childList' && mutation.addedNodes.length >0){
-  				mutation.addedNodes.forEach(function(node){
-  					if(!(node.nodeType == 3 )&& !(node.nodeName.toUpperCase()===highlightTag.toUpperCase() && node.className ===highlightClassName )){
-  					 
+  				mutation.addedNodes.forEach(function(node){ 
+  					if(!(node.nodeType == 3 )&& !(node.nodeName.toUpperCase()===highlightTag.toUpperCase() && node.className ===highlightClassName )){ 
   						 chrome.storage.local.get(null,function(keys){
 					  		for(var key in keys){
 					  			var keyword = keys[key];
@@ -163,6 +170,7 @@
   		chrome.storage.local.get(null,function(items){
 	  		for(var key in items){
 	  			var keyword = items[key];
+	  			console.log(key);
 	  			highlight(keyword.text,keyword.color,key);
 	  		}
 	  	})
@@ -183,6 +191,5 @@
   			}
 
   		}
-  	);
-  	 	
+  	); 	
 })();

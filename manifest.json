@@ -5,17 +5,22 @@
   "description": "This extension highlights matched text on current pages",
   "version": "1.0",
 
-  "browser_action": {
-    "default_icon": "images/icon.png",
+  "browser_action": {    
     "default_popup": "popup.html",
-    "default_title": "Highlight Text"
+    "default_title": "Highlight Text",
+    "title": "Highlight Text"
+  },
+  "icons": { 
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png" 
   },
   "permissions": [
     "storage"
   ],
   "content_scripts": [
     {
-      "matches": ["https://*/*","http://*/*","file://*/*"],
+      "matches": ["https://*/*","http://*/*","file://*/*","file:///*/*"],
       "css": ["css/content.css"],
       "js": ["bower_components/jquery/dist/jquery.js", "content.js"]
     }
